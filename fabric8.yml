@@ -1,11 +1,11 @@
 ---
-buildName: "ansible-node-example"
+buildName: "test-node"
 codeReview: false
 links:
-  Git: "https://github.com/jmlambert78/node-example"
-  Job: "http://172.30.155.230:80/job/ansible-node-example"
-  Staging: "http://172.30.227.254:80/kubernetes/pods?namespace=node-example98-staging"
-  Production: "http://172.30.227.254:80/kubernetes/pods?namespace=node-example98-production"
+  Git: "https://github.com/Tomtom76/node-example.git"
+  Job: "http://172.30.161.63:80/job/test-node"
+  Staging: "http://172.30.198.68:80/kubernetes/pods?namespace=node-example98-staging"
+  Production: "http://172.30.198.68:80/kubernetes/pods?namespace=node-example98-production"
 environments:
   Staging: "node-example98-staging"
   Production: "node-example98-production"
