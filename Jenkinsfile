@@ -4,7 +4,7 @@ def envProd = "${env.JOB_NAME}-production"
 
 node ('kubernetes'){
 
-  git 'https://github.com/jmlambert78/node-example'
+  git 'https://github.com/Tomtom76/node-example'
 
   stage 'canary release'
     if (!fileExists ('Dockerfile')) {
