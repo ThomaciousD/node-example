@@ -1,6 +1,5 @@
 #!/usr/bin/groovy
 def envStage = "${env.JOB_NAME}-staging"
-def envProd = "${env.JOB_NAME}-production"
 
 node ('kubernetes'){
 
@@ -13,44 +12,40 @@ node ('kubernetes'){
 
     def newVersion = performCanaryRelease {}
 
-    def rc = getKubernetesJson {
+    /*def rc = getKubernetesJson {
       port = 8080
       label = 'node'
       icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/nodejs.svg'
       version = newVersion
       imageName = clusterImageName
-    }
+    }*/
 
-  stage 'Rolling upgrade Staging'
-    kubernetesApply(file: rc, environment: envStage)
-
-  approve{
-    room = null
-    version = canaryVersion
-    console = fabric8Console
-    environment = envStage
-  }
-  
-  stage 'Rolling upgrade Production'
-    kubernetesApply(file: rc, environment: envProd)
+  //stage 'Rolling upgrade Staging'
+    //kubernetesApply(file: rc, environment: envStage)
 }
-def performCanaryRelease2(body) {
+def performCanaryReleasePath(body) {
+    
+    def versionPrefix = ""
+    try {
+        versionPrefix = VERSION_PREFIX
+    } catch (Throwable e) {
+		println "VERSION_PREFIX build variable undefined, falling-back to default"
+        versionPrefix = "1.0"
+    }
+    println "versionPrefix=${versionPrefix}" 
+
     // evaluate the body block, and collect configuration into the object
     def config = [:]
-    def regPush = "dockerhub.gemalto.com:8500"
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
-    body()
 
-    def newVersion = getNewVersion{}
+    def newVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
     env.setProperty('VERSION',newVersion)
-    echo "before build"
+
     kubernetes.image().withName("${env.JOB_NAME}").build().fromPath(".")
-    echo "before tag"
-    kubernetes.image().withName("${env.JOB_NAME}").tag().inRepository("${regPush}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").withTag(newVersion)
-    echo "before push"
-    kubernetes.image().withName("${regPush}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").push().withTag(newVersion).toRegistry()
+    // kubernetes.image().withName("${env.JOB_NAME}").tag().inRepository("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").withTag(newVersion)
+    // kubernetes.image().withName("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").push().withTag(newVersion).toRegistry()
 
     return newVersion
   }
